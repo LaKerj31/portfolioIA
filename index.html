@@ -1138,9 +1138,32 @@ function openCollectionLightbox(id, startIdx) {
   openLightbox(p.images, startIdx || cardSlideIndex[id] || 0);
 }
 
+// DÉLÉGATION DES CLICS SUR LES VIGNETTES
+const allProjects = {};
+document.addEventListener('click', function(e) {
+  const card = e.target.closest('.project-card[data-thumb-type]');
+  if(!card) return;
+  const type = card.dataset.thumbType;
+  const pid = parseInt(card.dataset.pid);
+  if(!type || !pid) return;
+  const p = allProjects[pid];
+  if(!p) { console.warn('Projet non trouvé:', pid, Object.keys(allProjects)); return; }
+  if(type === 'video') {
+    if(!p.videos || !p.videos.length) { console.warn('Pas de vidéos dans le projet'); return; }
+    openVideoModal(p.videos, 0);
+  } else if(type === 'collection') {
+    openImgLightbox(p.images, cardSlideIndex[pid] || 0);
+  } else if(type === 'image') {
+    openImgLightbox([p.thumb], 0);
+  }
+});
+
 function registerCardProjects() {
   const all = JSON.parse(localStorage.getItem('pyk-projects') || '[]');
-  all.forEach(p => { if(p.images || p.videos) cardProjects[p.id] = p; });
+  all.forEach(p => {
+    allProjects[p.id] = p;
+    if(p.images || p.videos) cardProjects[p.id] = p;
+  });
 }
 registerCardProjects();
 
@@ -1253,13 +1276,10 @@ function buildCard(p){
       : `<div class="project-thumb-ph"><span>${p.cat==='image'?'🖼️':p.cat==='video'?'🎬':'🎵'}</span><span>${p.cat==='image'?'Image':'Vidéo'} générée</span></div>`;
   }
   const cardClass = (isCollection || isVideoCollection) ? ' has-slider' : '';
-  const thumbClick = isVideoCollection
-    ? `onclick="openVideoModal(${JSON.stringify(p.videos)}, 0)" style="cursor:pointer;"`
-    : isCollection
-      ? `onclick="openImgLightbox(${JSON.stringify(p.images)}, cardSlideIndex['${p.id}'] || 0)" style="cursor:zoom-in;"`
-      : p.thumb ? `onclick="openImgLightbox(['${p.thumb}'], 0)" style="cursor:zoom-in;"` : '';
-  return`<div class="project-card${cardClass}">
-    <div class="project-thumb" ${thumbClick}>${thumbHtml}</div>
+  const thumbType = isVideoCollection ? 'video' : (isCollection ? 'collection' : (p.thumb ? 'image' : ''));
+  allProjects[p.id] = p;
+  return`<div class="project-card${cardClass}" data-pid="${p.id}" data-thumb-type="${thumbType}" style="cursor:${thumbType ? (thumbType==='video'?'pointer':'zoom-in') : 'default'}">
+    <div class="project-thumb">${thumbHtml}</div>
     <div class="project-body">
       <div class="project-meta"><span class="project-type ${tClass[p.cat]}">${tLabel[p.cat]}</span><span class="project-date">${p.date||''}</span></div>
       <div class="project-title">${p.title}</div>
@@ -1368,11 +1388,17 @@ const vmVideo = document.getElementById('vmVideo');
 
 function openVideoModal(videos, startIdx) {
   vmVideos = videos; vmIdx = startIdx || 0;
+  videoModal.classList.add('open');
   vmVideo.src = vmVideos[vmIdx];
-  vmVideo.load(); vmVideo.play();
+  vmVideo.load();
+  var playPromise = vmVideo.play();
+  if(playPromise !== undefined) {
+    playPromise.catch(function() {
+      // Autoplay bloqué - l'utilisateur appuie sur play manuellement
+    });
+  }
   document.getElementById('vmNav').style.display = vmVideos.length > 1 ? 'flex' : 'none';
   updateVmCounter();
-  videoModal.classList.add('open');
 }
 function updateVmCounter() {
   document.getElementById('vmCounter').textContent = vmVideos.length > 1 ? (vmIdx+1) + ' / ' + vmVideos.length : '';
