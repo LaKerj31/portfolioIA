@@ -920,7 +920,7 @@ async function sendMsg(){
   const inp=document.getElementById('chatInput');const text=inp.value.trim();
   if(!text||!apiKey)return;inp.value='';addMsg('user',text);chatHistory.push({role:'user',content:text});addTyping();
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYSTEM,messages:chatHistory})});
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYSTEM,messages:chatHistory})});
     const d=await r.json();removeTyping();
     if(d.content?.[0]){addMsg('ai',d.content[0].text);chatHistory.push({role:'assistant',content:d.content[0].text});}
     else addMsg('ai','Une erreur est survenue. Vérifie ta clé API.');
