@@ -752,7 +752,7 @@
     <li><a href="#about">À propos</a></li>
     <li><a href="#skills">Compétences</a></li>
     <li><a href="#projects">Projets</a></li>
-    <li><a href="#progression">Progression</a></li>
+    
     <li><a href="#chatbot">Chat</a></li>
     <li><a href="#contact">Contact</a></li>
   </ul>
@@ -945,22 +945,7 @@
   </div>
 </div>
 
-<!-- PROGRESSION -->
-<section id="progression">
-  <div class="divider"></div>
-  <div class="section-inner">
-    <div class="section-tag">Timeline</div>
-    <div class="timeline-header reveal">
-      <h2 class="section-title" style="margin-bottom:0">Ma <span class="grad-text">Progression</span></h2>
-      <button class="btn-secondary" style="font-size:0.75rem;" onclick="openTLModal()">+ Ajouter une étape</button>
-    </div>
-    <div class="timeline-wrapper reveal" id="timelineWrapper">
-      <div class="timeline-line"></div>
-    </div>
-  </div>
-</section>
 
-<!-- TIMELINE MODAL -->
 <div class="modal-overlay" id="tlModal">
   <div class="modal-box">
     <button class="modal-close" onclick="closeTLModal()">✕</button>
@@ -1309,38 +1294,6 @@ function publishProject(){
 }
 renderProjects();
 
-// TIMELINE
-let tl=JSON.parse(localStorage.getItem('pyk-timeline')||'null');
-if(!tl)tl=[
-  {date:'Janvier 2025',title:"Début de l'exploration IA",desc:'Premiers tests avec Midjourney et GPT. Découverte du potentiel génératif.',tag:'Début',future:false},
-  {date:'Printemps 2025',title:'Outils vidéo & image',desc:'Expérimentation avec Kling, Sora, GPT Image 2.0. Premières générations sérieuses.',tag:'Image & Vidéo',future:false},
-  {date:'Été 2025',title:'Audio & Voix',desc:'Découverte de Suno et ElevenLabs. Fusion avec la post-prod audio.',tag:'Musique',future:false},
-  {date:'À venir',title:'Projet audiovisuel × IA',desc:"Un projet mêlant post-production cinéma et génération IA. En cours de définition.",tag:'Projet',future:true},
-];
-function renderTL(){
-  const w=document.getElementById('timelineWrapper');
-  const line=w.querySelector('.timeline-line');
-  w.innerHTML='';w.appendChild(line);
-  tl.forEach(ev=>{
-    const d=document.createElement('div');d.className='timeline-item';
-    d.innerHTML=`<div class="timeline-dot ${ev.future?'future':''}"></div><div class="timeline-date">${ev.date}</div><div class="timeline-event-title">${ev.title}</div><div class="timeline-event-desc">${ev.desc}</div>${ev.tag?`<span class="timeline-tag">${ev.tag}</span>`:''}`;
-    w.appendChild(d);
-  });
-}
-function openTLModal(){document.getElementById('tlModal').classList.add('open');}
-function closeTLModal(){document.getElementById('tlModal').classList.remove('open');}
-document.getElementById('tlModal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeTLModal();});
-function addTLEvent(){
-  const title=document.getElementById('tl-title').value.trim();if(!title){alert('Ajoute un titre !');return;}
-  const raw=document.getElementById('tl-date').value;
-  let ds=raw?new Date(raw+'-01').toLocaleDateString('fr-FR',{month:'long',year:'numeric'}):'Date à définir';
-  ds=ds.charAt(0).toUpperCase()+ds.slice(1);
-  tl.push({date:ds,title,desc:document.getElementById('tl-desc').value.trim(),tag:document.getElementById('tl-tag').value.trim(),future:false});
-  tl.sort((a,b)=>a.future?1:b.future?-1:0);
-  localStorage.setItem('pyk-timeline',JSON.stringify(tl));renderTL();closeTLModal();
-  ['tl-date','tl-title','tl-desc','tl-tag'].forEach(id=>document.getElementById(id).value='');
-}
-renderTL();
 
 // CHATBOT
 let apiKey=sessionStorage.getItem('pyk-api-key')||'';
